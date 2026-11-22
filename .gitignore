@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+*.log
+android/app/build/
+scripts/.audio-cache/
+shots/
+
+# Organiser files - do not commit
+BolBharat_InnovationChallenge_Problem_Statements (1).pdf
+extra-info-on-problem-statement.txt

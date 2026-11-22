@@ -1,0 +1,8 @@
+import fs from 'fs'; import WebSocket from 'ws';
+const env=Object.fromEntries(fs.readFileSync('.env','utf8').split('\n').filter(l=>l&&!l.startsWith('#')).map(l=>l.split('=')));
+const tts=async(text)=>{for(let a=0;a<5;a++){const r=await fetch('https://api.vachana.ai/api/v1/tts/inference',{method:'POST',headers:{'X-API-Key-ID':env.GNANI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({text,voice:'Prakash',model:'timbre-v3.0',language:'kn-IN',audio_config:{sample_rate:16000,container:'raw'}})});if(r.status==429){await new Promise(x=>setTimeout(x,1500));continue}return Buffer.from(await r.arrayBuffer());}};
+const stt=(pcm,format)=>new Promise(res=>{const out=[];const ws=new WebSocket('wss://api.vachana.ai/stt/v3/stream',{headers:{'x-api-key-id':env.GNANI_API_KEY,'x-sample-rate':'16000',model:'prisma-v3.0',language_code:'indic-auto',format}});
+ws.on('message',m=>{const j=JSON.parse(m);if(j.type==='transcript')out.push(j.text)});
+ws.on('open',async()=>{const all=Buffer.concat([Buffer.alloc(22000),pcm,Buffer.alloc(52000)]);for(let i=0;i+1024<=all.length;i+=1024){ws.send(all.subarray(i,i+1024));await new Promise(r=>setTimeout(r,32))}setTimeout(()=>{ws.close();res(out.join(' '))},1200)})});
+const P=['ರಮೇಶ್ ಮುನ್ನೂರ ನಲವತ್ತು ರೂಪಾಯಿ ಸಾಲ','ಸುರೇಶ್ ಐನೂರು ರೂಪಾಯಿ ಕೊಟ್ಟರು','ಮೂರ್ತಿ ಇನ್ನೂರ ಐವತ್ತು ಸಾಲ','ಇವತ್ತಿನ ಮಾರಾಟ ಒಂದು ಸಾವಿರದ ಐನೂರು','ರಮೇಶ್ ಒಟ್ಟು ಎಷ್ಟು ಬಾಕಿ ಇದೆ','ಸುರೇಶ್ ಗೆ ಇನ್ನೂರು ರೂಪಾಯಿ ಕೊಟ್ಟೆ ನಿನ್ನೆ','ಅಲ್ಲ ನಾಲ್ಕುನೂರ ಮೂವತ್ತು','ಹೌದು','ಹಿಂದಿನದನ್ನು ತೆಗೆದು ಹಾಕಿ','ನಿನ್ನೆ ನೂರು ರೂಪಾಯಿ ಬಂತು'];
+for(const p of P){const pcm=await tts(p);const w=await stt(pcm,'transliterate');const d=await stt(pcm,'transcribe');console.log(p,'\n   W:',w,'\n   D:',d);await new Promise(r=>setTimeout(r,500));}

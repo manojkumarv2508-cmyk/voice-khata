@@ -1,0 +1,14 @@
+import puppeteer from 'puppeteer-core';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] });
+const p = await b.newPage(); await p.setViewport({ width: 1440, height: 900 });
+const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+await p.goto('http://localhost:3000/', { waitUntil: 'networkidle0' }); await p.evaluate(() => { localStorage.clear(); localStorage.setItem('vk_seen', '1'); }); await p.reload({ waitUntil: 'networkidle0' });
+await p.type('#fName', 'Vishan'); await p.type('#fShop', 'vishan store'); await p.type('#fPin', '1234'); await p.click('#authBtn'); await p.waitForSelector('#main:not([hidden])'); await sleep(900);
+const vis = () => p.$eval('#voicePanel', (e) => !e.hidden);
+console.log('panel at start:', await vis());
+await p.click('.mic-tab'); await sleep(500); console.log('after mic click:', await vis()); await p.screenshot({ path: 'shots/nav-open.png' });
+await p.click('#tabs [data-t=stock]'); await sleep(300); console.log('after switching to Stock (panel stays until closed):', await vis());
+await p.click('.mic-tab'); await sleep(400); console.log('after mic click again:', await vis());
+await p.click('.mic-tab'); await p.click('#kbBtn'); await p.type('#typeIn', 'kaise ho'); await p.keyboard.press('Enter'); await sleep(1200);
+console.log('chat said:', await p.$eval('#said', (e) => e.textContent)); console.log('errors', JSON.stringify(errs)); await b.close();
