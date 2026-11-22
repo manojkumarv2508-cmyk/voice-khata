@@ -62,7 +62,7 @@ add('sau so sou hundred hunderd', 100, 'm');
 add('hazaar hazar hajar hajaar thousand thousands aayiram ayiram aayram saavira savira savirada saviradu', 1000, 'm');
 add('lakh lac lakhs latcham latchm laksha lakshada', 100000, 'm');
 add('crore karod crores koti', 10000000, 'm');
-add('dedh derh der', 1.5); add('dhai dhaai adhai dhaayi dhayi', 2.5); add('sawa sava', 1.25);
+add('dedh derh der', 1.5); add('dhai dhaai adhai dhaayi dhayi dahi', 2.5); add('sawa sava', 1.25);
 add('saade sade sadhe saadhe', 0, 'h'); add('paune pone paun', 0, 'q');
 // tolerated stems for fused Tamil forms ("irubathainthu" = irubath + ainthu)
 const STEMS = { irubath: 20, muppath: 30, naarpath: 40, aimbath: 50, arubath: 60, ezhubath: 70, enbath: 80, pathin: 10 };

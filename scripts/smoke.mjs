@@ -13,6 +13,6 @@ await p.click('#obNext'); await sleep(1800); await p.screenshot({ path: `${shots
 await p.click('#obNext'); await sleep(900); await p.click('#obNext'); await sleep(500); await p.click('#obNext'); await sleep(900);
 await p.type('#fName', 'Harshit'); await p.type('#fShop', 'Sri Lakshmi Stores'); await p.type('#fPin', '1234'); await p.click('#authBtn');
 await p.waitForSelector('#main:not([hidden])'); await sleep(1200); await p.evaluate(() => { document.documentElement.dataset.theme = 'light'; }); await sleep(500); await p.screenshot({ path: `${shots}/d-home.png` });
-await p.click('#suggest button'); await sleep(2500); await p.screenshot({ path: `${shots}/e-turn.png` });
+await p.click('.mic-tab'); await sleep(400); await p.click('#suggest button'); await sleep(2500); await p.screenshot({ path: `${shots}/e-turn.png` });
 console.log('said:', await p.$eval('#said', (e) => e.textContent)); console.log('errors:', JSON.stringify(errors));
 await b.close();

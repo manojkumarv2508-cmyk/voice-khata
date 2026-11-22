@@ -32,6 +32,17 @@ const CASES = [
   { say: 'ಗೀತಾ ದೇವಿ ಇನ್ನೂರ ಐವತ್ತು ಸಾಲ', tl: 'kn-IN', voice: 'Shubham', exp: [{ n: 'Geeta Devi', k: 'credit', a: 250 }] },
   { say: 'ಇವತ್ತಿನ ಮಾರಾಟ ಒಂದು ಸಾವಿರದ ಐನೂರು', tl: 'kn-IN', voice: 'Tarika', exp: [], sale: 1500 },
   { say: 'ಮುರುಗನ್ ಒಟ್ಟು ಎಷ್ಟು ಬಾಕಿ ಇದೆ', tl: 'kn-IN', voice: 'Prakash', exp: [], query: /Murugan/ },
+  { say: 'सुरेश का तीन सौ चालीस रुपये उधार', tl: 'hi-IN', voice: 'Avinash', exp: [{ n: 'Suresh', k: 'credit', a: 340 }] },
+  { say: 'मुरुगन ने पाँच सौ रुपये दिए', tl: 'hi-IN', voice: 'Shivani', exp: [{ n: 'Murugan', k: 'payment', a: 500 }] },
+  { say: 'गीता देवी का ढाई सौ उधार लिख दो', tl: 'hi-IN', voice: 'Kalpana', exp: [{ n: 'Geeta Devi', k: 'credit', a: 250 }] },
+  { say: 'सुरेश ने कल दो सौ दिए थे', tl: 'hi-IN', voice: 'Arko', exp: [{ n: 'Suresh', k: 'payment', a: 200 }] },
+  { say: 'आज की बिक्री पंद्रह सौ', tl: 'hi-IN', voice: 'Sunaina', exp: [], sale: 1500 },
+  { say: 'मुरुगन का कुल कितना बाकी है', tl: 'hi-IN', voice: 'Devansh', exp: [], query: /Murugan/ },
+  { say: 'आज कितना उधार गया', tl: 'hi-IN', voice: 'Riyaa', exp: [], query: /udhaar given/ },
+  { say: 'सुरेश का चार सौ तीस रुपये जमा', tl: 'hi-IN', voice: 'Harshad', exp: [{ n: 'Suresh', k: 'payment', a: 430 }] },
+  { say: 'रमेश शर्मा का साढ़े तीन सौ उधार', tl: 'hi-IN', voice: 'Prakash', exp: [{ n: 'Ramesh Sharma', k: 'credit', a: 350 }] },
+  { say: 'सुरेश का एक हज़ार दो सौ उधार', tl: 'hi-IN', voice: 'Tarika', exp: [{ n: 'Suresh', k: 'credit', a: 1200 }] },
+  { say: 'सुरेश का पिछला हटा दो', tl: 'hi-IN', voice: 'Shubham', exp: [], undo: true },
 ];
 
 const CACHE = new URL('./.audio-cache/', import.meta.url); fs.mkdirSync(CACHE, { recursive: true });

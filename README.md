@@ -1,6 +1,6 @@
 # Voice Khata — a voice ledger for kirana stores
 
-> *Bolo, khata likh jaayega.* A shopkeeper talks to the counter mid-sale — **"Ramesh ka 340 udhaar, kal 200 diya tha"** — and the ledger updates correctly, in **Hindi, Tamil, Kannada or English (with English code-mix)**, without touching the screen.
+> *Bolo, khata likh jaayega.* A shopkeeper talks to the counter mid-sale — **"Ramesh ka 340 udhaar, kal 200 diya tha"** — and the ledger updates correctly, in **Hindi or English (with English code-mix)**, without touching the screen.
 
 Built for the **BolBharat – Gnani Voice AI Innovation Challenge, Track PS2 (Voice Khata for kirana stores)** on the **Gnani Vachana API Platform**: Prisma v3.0 (STT) and Timbre v3.0 (TTS) over WebSocket streaming.
 
@@ -85,7 +85,7 @@ Measured on a 19-phrase set (Hindi, Hinglish, Devanagari, Tamil, Kannada, Englis
 
 | Baseline rule | How it is met |
 |---|---|
-| **AI disclosure in first turn, in the user's language** | Every session opens with *"Namaste! I am an AI assistant…"* (Hindi / English / Tamil / Kannada) before listening |
+| **AI disclosure in first turn, in the user's language** | Every session opens with *"Namaste! I am an AI assistant…"* (Hindi / English) before listening |
 | **Synthetic or consented data only** | Demo data is synthetic. No real customer data or call recordings used for testing; test audio is generated |
 | **DPDP — encrypted at rest, deleted** | Ledger is **AES-GCM encrypted** in the browser with a PBKDF2 key derived from the shopkeeper's PIN; the key lives only in memory. **Transcripts are never stored** (they exist in memory while a turn is processed). "Erase all data" wipes everything |
 | **Reminders: polite, opt-in only** | A reminder can only be prepared for a customer with the *opt-in* switch on; wording is a fixed polite template ("whenever convenient… thank you"), no pressure or threat language; it is shown on screen for the shopkeeper to send himself — nothing is sent automatically |
@@ -100,14 +100,14 @@ Privacy note: in **hands-free mode** the microphone stays open and audio streams
 ```
 server.js                 static server + WebSocket proxies to Gnani (API key stays here)
 public/
-  index.html, style.css   minimal PWA UI (light/dark, Hindi/Tamil/Kannada/English)
+  index.html, style.css   minimal PWA UI (light/dark, Hindi/English)
   js/app.js               screens, session lifecycle, wake word
   js/voice.js             mic worklet, STT/TTS streaming, barge-in
   js/agent.js             dialog manager (disambiguation, corrections, cross-check, day-end)
   js/ledger.js            customers, suppliers, sales, stock + balances
   js/store.js             PIN-derived AES-GCM storage
-  js/i18n.js              spoken replies in hi / en / ta / kn
-  js/nlu/numbers.js       Hindi · Tamil · Kannada · English number grammar
+  js/i18n.js              spoken replies in hi / en
+  js/nlu/numbers.js       Hindi · English number grammar (Tamil/Kannada words still understood)
   js/nlu/parse.js         intents, names, direction, dates, corrections
 test/                     unit + dialog tests        scripts/  e2e + browser harnesses
 ```

@@ -2,7 +2,7 @@ import { Ledger, emptyState, seedDemo } from './ledger.js';
 import { Agent } from './agent.js';
 import { Voice } from './voice.js';
 import { Vault } from './store.js';
-import { LANGS, money } from './i18n.js';
+import { LANGS, S, money } from './i18n.js';
 import { hasWake, stripWake } from './nlu/parse.js';
 import { Viz } from './viz.js';
 import { C } from './chat.js';
@@ -67,15 +67,29 @@ const KNU = {
 };
 (function applyKn(t, k) { for (const key of Object.keys(k)) { if (typeof k[key] === 'string') t[key].kn = k[key]; else applyKn(t[key], k[key]); } })(U, KNU);
 
+const STORY = {
+  en: { k: 'VOICE KHATA', h: 'The whole khata,<br><span class="outline">in your voice.</span>', p: "Speak an entry the way you'd tell a friend. The same pipeline you see on the right writes the ledger, checks every rupee, and answers back — in Hindi or English, mixed freely.",
+    f: [['Talk, don\'t type', 'Tap the mic mid-sale, or say “Khata, …” hands-free.'], ['Every rupee exact', '“Teen sau chaalis”, “340”, “three-forty” → ₹340. Fix it with “nahi, 430”.'], ['Yours alone', 'Encrypted on the phone. Nothing recorded. Always says it\'s an AI.']], r: '↺ Replay intro' },
+  hi: { k: 'वॉइस खाता', h: 'पूरा खाता,<br><span class="outline">आपकी आवाज़ में।</span>', p: 'दोस्त को बताने जैसे एंट्री बोलिए। दाईं ओर दिख रही वही प्रक्रिया खाता लिखती है, हर रुपया जाँचती है और बोलकर जवाब भी देती है — हिन्दी या English में, मिलाकर भी।',
+    f: [['बोलिए, टाइप मत कीजिए', 'बिक्री के बीच माइक दबाइए, या हैंड्स-फ़्री में “खाता, …” कहिए।'], ['हर रुपया सटीक', '“तीन सौ चालीस”, “340”, “three-forty” → ₹340। सुधारने के लिए कहिए “नहीं, 430”।'], ['सिर्फ़ आपका', 'फ़ोन में एन्क्रिप्टेड। कुछ रिकॉर्ड नहीं होता। हमेशा बताता है कि वह एआई है।']], r: '↺ इंट्रो फिर देखें' },
+};
+const FI = ['<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', '<path d="M4 7h16M4 12h10M4 17h6"/>', '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'];
+function renderStory() {
+  const T = STORY[lang] || STORY.en;
+  $('#story').innerHTML = `<p class="kicker"><i></i>${T.k}</p><h2 class="headline">${T.h}</h2><p class="lede">${T.p}</p><ul class="feats">${T.f.map(([b, s], i) => `<li><span class="fi"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${FI[i]}</svg></span><div><b>${b}</b><small>${s}</small></div></li>`).join('')}</ul><button id="replayBtn" class="btn ghost-btn">${T.r}</button>`;
+}
+function applyLang() { document.documentElement.lang = lang; renderStory(); if (insight) refreshSide(); const e = document.querySelector('.top .eyebrow'); if (e) e.textContent = lang === 'hi' ? 'वॉइस खाता' : 'VOICE KHATA'; }
+
 let state, ledger, agent, voice, viz, insight, lastHero = 0, lang = 'hi', tab = 'home', seg = 'customer', handsFree = false;
 const u = (k) => (typeof k === 'string' ? U[k] : k)[lang];
 
 // ---------- boot ----------
 const authEl = $('#auth'), mainEl = $('#main');
 function showAuth(mode) {
+  queueMicrotask(applyLang);
   authEl.hidden = false; mainEl.hidden = true;
   const create = mode === 'create', pr = Vault.profile();
-  if (!create && pr) lang = pr.lang || lang;
+  if (!create && pr) lang = LANGS[pr.lang] ? pr.lang : 'hi';
   $('#langChips').innerHTML = Object.entries(LANGS).map(([k, v]) => `<button type="button" data-l="${k}" aria-pressed="${k === lang}">${v.label}</button>`).join('');
   $('#langChips').onclick = (e) => { const b = e.target.closest('button'); if (b) { lang = b.dataset.l; showAuth(mode); } };
   $('#signupFields').hidden = !create; $('#demoRow').hidden = !create;
@@ -105,7 +119,7 @@ function showAuth(mode) {
 
 function enter() {
   authEl.hidden = true; mainEl.hidden = false;
-  lang = state.profile.lang || lang;
+  lang = LANGS[state.profile.lang] ? state.profile.lang : 'hi';
   ledger = new Ledger(state, (s) => Vault.save(s));
   agent = new Agent(ledger, () => lang);
   voice = new Voice({ keyterms: () => agent.keyterms(), lang: () => lang });
@@ -117,7 +131,7 @@ function enter() {
 
 // ---------- rendering ----------
 function renderAll() {
-  document.documentElement.lang = lang;
+  applyLang();
   $('#shopName').textContent = state.profile.shop;
   $('#langBtn').textContent = LANGS[lang].short + ' ▾';
   $('#hint').textContent = u(U.hint[voice.state] ? U.hint[voice.state] : U.hint.idle);
@@ -129,7 +143,7 @@ function renderAll() {
   if (!tabsEl.dataset.built) { tabsEl.dataset.built = 1; tabsEl.innerHTML = '<span class="ind"></span>' + tabBtn(TABS[0]) + tabBtn(TABS[1]) + MICBTN + tabBtn(TABS[2]) + tabBtn(TABS[3]); }
   tabsEl.style.setProperty('--i', { home: 0, khata: 1, stock: 3, log: 4 }[tab]);
   tabsEl.querySelectorAll('button[data-t]:not(.mic-tab)').forEach((b) => { b.removeAttribute('aria-current'); if (b.dataset.t === tab) b.setAttribute('aria-current', 'page'); b.querySelector('.tl').textContent = u(U.tabs[b.dataset.t]); });
-  $('#suggest').innerHTML = examples().slice(0, 5).map((t, i) => `<button data-i="${i}">${esc(t)}</button>`).join('');
+  $('#suggest').innerHTML = examples().slice(0, 5).map((t, i) => `<button data-i="${i}">${esc(t.label)}</button>`).join('');
   for (const v of ['home', 'khata', 'stock', 'log']) $(`#v-${v}`).hidden = v !== tab;
   ({ home: renderHome, khata: renderKhata, stock: renderStock, log: renderLog })[tab]();
   document.querySelectorAll('.list').forEach((l) => [...l.children].forEach((c, i) => c.style.setProperty('--n', i)));
@@ -137,12 +151,15 @@ function renderAll() {
   refreshSide();
 }
 
-const EX = ['Suresh ka 340 udhaar, kal 200 diya tha', 'Ramesh ka total?', 'nahi, 430', 'Aaj 1500 ki bikri', 'Parle se 5000 ka maal liya', 'Oreo ke 20 packet aaye, expiry march', 'Din ka hisab', 'pichla hata do'];
-function examples() { return { ta: ['Murugan munnooru naarpathu kadan', ...EX], kn: ['Murugan munnoora nalavattu sala', ...EX] }[lang] || EX; }
+const EX_SAY = ['Suresh ka 340 udhaar, kal 200 diya tha', 'Ramesh ka total?', 'nahi, 430', 'Aaj 1500 ki bikri', 'Parle se 5000 ka maal liya', 'Oreo ke 20 packet aaye, expiry march', 'Din ka hisab', 'pichla hata do'];
+const EX_HI = ['सुरेश का 340 उधार, कल 200 दिया था', 'रमेश का टोटल?', 'नहीं, 430', 'आज 1500 की बिक्री', 'पारले से 5000 का माल लिया', 'ओरियो के 20 पैकेट आए, एक्सपायरी मार्च', 'दिन का हिसाब', 'पिछला हटा दो'];
+/** [{label shown, say (what the agent parses)}] */
+function examples() { return EX_SAY.map((say, i) => ({ say, label: lang === 'hi' ? EX_HI[i] : say })); }
 function refreshSide() {
   if (!insight) return;
+  insight.setLang(lang);
   insight.setShop(state.profile.shop, `${state.profile.name} · ${LANGS[lang].label}`);
-  insight.examples(examples(), (t) => onHeard({ w: t, d: '', endSpeechAt: performance.now(), typed: true }));
+  insight.examples(examples(), (t) => onHeard({ w: t.say, d: '', endSpeechAt: performance.now(), typed: true }));
 }
 function countUp(el, to) {
   if (!el) return; const from = lastHero; lastHero = to; const t0 = performance.now();
@@ -153,20 +170,26 @@ function showCoach() { const c = $('#coach'); c.textContent = OB[lang].coach; c.
 function hideCoach() { $('#coach').hidden = true; $('#orb').classList.remove('coachy'); if (state && !state.profile.toured) { state.profile.toured = true; ledger.commit(); } }
 
 function traceInfo(reply) {
-  const tr = agent.trace || {}, r = tr.r, chips = [];
+  const hi = lang === 'hi', tr = agent.trace || {}, r = tr.r, chips = [];
+  const L = hi ? { who: 'कौन', amt: '₹', type: 'प्रकार', when: 'कब', sale: 'बिक्री', via: 'ज़रिया', asks: 'सवाल', intent: 'इरादा', ans: 'जवाब', chat: 'बातचीत', asksT: 'पूछेगा', yday: 'कल', ago: 'दिन पहले',
+    ok: 'शब्द और अंक एक जैसे ✓', diff: 'दोनों अलग → आपसे पुष्टि माँगी', wait: 'आपके जवाब का इंतज़ार — अभी कुछ नहीं लिखा', none: 'कोई बदलाव नहीं (सिर्फ़ जवाब)', saved: 'सेव, एन्क्रिप्टेड', bal: 'बाकी' }
+    : { who: 'who', amt: '₹', type: 'type', when: 'when', sale: 'sale', via: 'via', asks: 'asks', intent: 'intent', ans: 'answer to', chat: 'small talk', asksT: 'asks', yday: 'yesterday', ago: 'd ago',
+    ok: 'Word and digit streams agree ✓', diff: 'Streams differ → asked you to confirm', wait: 'Waiting for your answer — nothing written yet', none: 'No change (answer only)', saved: 'saved, encrypted', bal: 'balance' };
+  const K = hi ? { credit: 'उधार', payment: 'जमा', purchase: 'माल', supplier_payment: 'दिया', sale: 'बिक्री' } : {};
+  const kw = (k) => K[k] || String(k).replace('_', ' ');
   const names = (ids) => (ids ? ids.map((id) => ledger.party(id)?.name).join(' / ') : null);
   let note = '';
-  if (tr.answer) chips.push({ k: 'answer to', v: tr.answer });
-  else if (r?.kind === 'entries') r.entries.forEach((e) => chips.push({ k: 'who', v: names(e.partyIds) || e.newName || '?', flag: !e.partyIds || e.partyIds.length > 1 }, { k: '₹', v: e.amount }, { k: 'type', v: e.dir || 'asks', flag: !e.dir }, ...(e.daysAgo ? [{ k: 'when', v: e.daysAgo === 1 ? 'yesterday' : `${e.daysAgo}d ago` }] : [])));
-  else if (r?.kind === 'sale') chips.push({ k: 'sale', v: `₹${r.amount}` }, { k: 'via', v: r.mode });
-  else if (r?.kind === 'query') chips.push({ k: 'asks', v: r.q });
-  else chips.push({ k: 'intent', v: reply.kind === 'chat' ? 'small talk' : (r?.kind || '?') });
+  if (tr.answer) chips.push({ k: L.ans, v: tr.answer });
+  else if (r?.kind === 'entries') r.entries.forEach((e) => chips.push({ k: L.who, v: names(e.partyIds) || e.newName || '?', flag: !e.partyIds || e.partyIds.length > 1 }, { k: L.amt, v: e.amount }, { k: L.type, v: e.dir ? kw(e.dir) : L.asksT, flag: !e.dir }, ...(e.daysAgo ? [{ k: L.when, v: e.daysAgo === 1 ? L.yday : `${e.daysAgo} ${L.ago}` }] : [])));
+  else if (r?.kind === 'sale') chips.push({ k: L.sale, v: `₹${r.amount}` }, { k: L.via, v: r.mode });
+  else if (r?.kind === 'query') chips.push({ k: L.asks, v: r.q });
+  else chips.push({ k: L.intent, v: reply.kind === 'chat' ? L.chat : (r?.kind || '?') });
   if (tr.da?.length && r) {
     const wa = r.entries ? r.entries.map((e) => e.amount) : r.amount ? [r.amount] : [];
-    if (wa.length) note = wa.join() === tr.da.join() ? 'Word and digit streams agree ✓' : 'Streams differ → asked you to confirm';
+    if (wa.length) note = wa.join() === tr.da.join() ? L.ok : L.diff;
   }
   const cards = reply.cards || [];
-  const ledgerText = cards.length ? cards.map((c) => `${c.party} · ${c.kind.replace('_', ' ')} ₹${c.amount} → balance ₹${c.bal} — saved, encrypted`).join('  |  ') : reply.kind === 'ask' ? 'Waiting for your answer — nothing written yet' : 'No change (answer only)';
+  const ledgerText = cards.length ? cards.map((c) => `${c.party} · ${kw(c.kind)} ₹${c.amount} → ${L.bal} ₹${c.bal} — ${L.saved}`).join('  |  ') : reply.kind === 'ask' ? L.wait : L.none;
   return { chips, note, ledger: ledgerText };
 }
 
@@ -242,7 +265,7 @@ function partySheet(id) {
 function settingsSheet() {
   openSheet(`<h2>${esc(u('settings'))}</h2><p class="sub">${esc(state.profile.name)} · ${esc(state.profile.shop)}</p>
     <div class="toggle"><div>${esc(u('hf'))}<small>${esc(u('hfSub'))}</small></div><button class="switch" id="hfSw" role="switch" aria-checked="${handsFree}"></button></div>
-    <div class="toggle"><div>${esc(u('theme'))}</div><div class="seg" id="thSeg" style="margin:0">${[['', 'Auto'], ['light', 'White'], ['dark', 'Black']].map(([k, n]) => `<button data-th="${k}" aria-pressed="${(document.documentElement.dataset.theme || '') === k}">${n}</button>`).join('')}</div></div>
+    <div class="toggle"><div>${esc(u('theme'))}</div><div class="seg" id="thSeg" style="margin:0">${[['', lang === 'hi' ? 'ऑटो' : 'Auto'], ['light', lang === 'hi' ? 'सफ़ेद' : 'White'], ['dark', lang === 'hi' ? 'काला' : 'Black']].map(([k, n]) => `<button data-th="${k}" aria-pressed="${(document.documentElement.dataset.theme || '') === k}">${n}</button>`).join('')}</div></div>
     <p class="tiny muted" style="margin:14px 0">${esc(u('privacy'))}</p>
     <div class="btnrow"><button class="btn" id="demoBtn">${esc(u('loadDemo'))}</button><button class="btn" id="lockBtn">${esc(u('lock'))}</button></div>
     <div class="btnrow"><button class="btn danger" id="wipeBtn">${esc(u('wipe'))}</button></div>`);
@@ -266,7 +289,7 @@ function wireUi() {
   };
   $('#langBtn').onclick = () => { const ks = Object.keys(LANGS); lang = ks[(ks.indexOf(lang) + 1) % ks.length]; state.profile.lang = lang; ledger.commit(); renderAll(); voice.interrupt(); if (!$('#coach').hidden) showCoach(); };
   $('#menuBtn').onclick = settingsSheet;
-  $('#suggest').onclick = (e) => { const b = e.target.closest('button'); if (b) { hideCoach(); onHeard({ w: examples()[+b.dataset.i], d: '', endSpeechAt: performance.now(), typed: true }); } };
+  $('#suggest').onclick = (e) => { const b = e.target.closest('button'); if (b) { hideCoach(); onHeard({ w: examples()[+b.dataset.i].say, d: '', endSpeechAt: performance.now(), typed: true }); } };
   $('#orb').onclick = onOrb;
   $('#kbBtn').onclick = () => { const r = $('#typeRow'); r.hidden = !r.hidden; if (!r.hidden) $('#typeIn').focus(); };
   $('#typeRow').onsubmit = (e) => { e.preventDefault(); const v = $('#typeIn').value.trim(); if (v) { $('#typeIn').value = ''; onHeard({ w: v, d: '', endSpeechAt: performance.now(), typed: true }); } };
@@ -291,20 +314,20 @@ let toastT;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2200); }
 
 // ---------- voice session ----------
-let sessionOpen = false, lastGreet = 0, idleT, convoUntil = 0, chain = Promise.resolve();
+let lastErrToast = 0, sessionOpen = false, lastGreet = 0, idleT, convoUntil = 0, chain = Promise.resolve();
 
-const ISLAND = { idle: '', listening: 'Listening', thinking: 'Understanding', speaking: 'Speaking' };
+const ISLAND = { en: { idle: '', listening: 'Listening', thinking: 'Understanding', speaking: 'Speaking' }, hi: { idle: '', listening: 'सुन रहा हूँ', thinking: 'समझ रहा हूँ', speaking: 'बोल रहा हूँ' } };
 function wireVoice() {
   voice.on('state', (st) => {
     $('#dock').dataset.state = st; $('#hint').textContent = u(U.hint[st] || U.hint.idle);
-    const isl = $('#island'); isl.dataset.s = st; $('#islandTxt').textContent = ISLAND[st] || 'Voice Khata';
+    const isl = $('#island'); isl.dataset.s = st; $('#islandTxt').textContent = (ISLAND[lang] || ISLAND.en)[st] || (lang === 'hi' ? 'वॉइस खाता' : 'Voice Khata');
     viz.set(st); insight.state(st);
   })
     .on('level', (r) => { $('#dock').style.setProperty('--lvl', voice.state === 'listening' ? Math.min(1, r * 9).toFixed(2) : 0); viz.push(r); if (voice.state === 'listening') insight.level(r); })
     .on('heard', (h) => { chain = chain.then(() => onHeard(h)).catch(console.error); })
     .on('ttfa', (ms) => { const c = $('#chip'); c.textContent = `⚡ ${(ms / 1000).toFixed(1)}s`; c.hidden = false; insight.spoken(ms); })
     .on('barge', () => toast(u('barge')))
-    .on('error', (m) => { if (m === 'stt' || /refused|key|closed/i.test(String(m))) console.warn('voice error', m); });
+    .on('error', (m) => { console.warn('voice error', m); if (Date.now() - lastErrToast > 8000) { lastErrToast = Date.now(); toast(S.netErr[lang]); } });
 }
 
 async function onOrb() {
@@ -337,7 +360,7 @@ async function onHeard({ w, d, endSpeechAt, typed, sttMs }) {
     w = stripWake(w); d = '';
     if (!w) { await speak({ hi: 'जी, बोलिए।', ta: 'சொல்லுங்கள்.', kn: 'ಹೇಳಿ.', en: 'Yes, go ahead.' }[lang]); return; }
   }
-  $('#heard').textContent = `“${w || d}”`;
+  $('#heard').textContent = `“${lang === 'hi' && d && !typed ? d : (w || d)}”`;
   const r = agent.handle({ w, d });
   if (!r) { voice.setState(voice.wantListen ? 'listening' : 'idle'); return; }
   if (r.kind === 'unknown' && (w || d).trim().split(/\s+/).length < 2) { voice.setState(voice.wantListen ? 'listening' : 'idle'); return; } // noise: stay quiet
@@ -375,9 +398,10 @@ function showReply(r) {
 // ---------- start ----------
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 const obRoot = $('#onboard');
-function intro(after) { obRoot.hidden = false; authEl.hidden = true; runOnboarding(obRoot, { lang, setLang: (l) => { lang = l; }, onDone: (l) => { lang = l; obRoot.hidden = true; try { localStorage.setItem('vk_seen', '1'); } catch { /* ignore */ } after(); } }); }
+function intro(after) { obRoot.hidden = false; authEl.hidden = true; runOnboarding(obRoot, { lang, setLang: (l) => { lang = l; applyLang(); }, onDone: (l) => { lang = l; obRoot.hidden = true; try { localStorage.setItem('vk_seen', '1'); } catch { /* ignore */ } after(); } }); }
 let seen = false; try { seen = !!localStorage.getItem('vk_seen'); } catch { /* ignore */ }
-$('#replayBtn').onclick = () => intro(() => { if (Vault.profile() && !state) showAuth('unlock'); });
+$('#story').onclick = (e) => { if (e.target.closest('#replayBtn')) intro(() => { if (Vault.profile() && !state) showAuth('unlock'); }); };
+applyLang();
 if (Vault.profile()) showAuth('unlock'); else if (seen) showAuth('create'); else intro(() => showAuth('create'));
 
 // ---- desktop: scale the phone to fit the window; live clock in the status bar ----

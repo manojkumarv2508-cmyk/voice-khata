@@ -1,6 +1,6 @@
 // Spoken + on-screen strings in Hindi, English and Tamil. TTS receives digits; the Gnani
 // text-normaliser turns "340 रुपये" into natural speech, so we never hand-spell numbers.
-export const LANGS = { hi: { label: 'हिन्दी', short: 'हि', bcp: 'hi-IN' }, en: { label: 'English', short: 'EN', bcp: 'en-IN' }, ta: { label: 'தமிழ்', short: 'த', bcp: 'ta-IN' }, kn: { label: 'ಕನ್ನಡ', short: 'ಕ', bcp: 'kn-IN' } };
+export const LANGS = { hi: { label: 'हिन्दी', short: 'हि', bcp: 'hi-IN' }, en: { label: 'English', short: 'EN', bcp: 'en-IN' } };
 
 const L = (hi, en, ta) => ({ hi, en, ta });
 const fmt = (n) => Number(n).toLocaleString('en-IN');

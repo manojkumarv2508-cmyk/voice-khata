@@ -1,14 +1,14 @@
 // First-run flow: language -> 4 animated slides -> microphone permission -> (sign-up handled by app.js) -> coach mark on the orb.
-const LN = { hi: 'हिन्दी', en: 'English', ta: 'தமிழ்', kn: 'ಕನ್ನಡ' };
+const LN = { hi: 'हिन्दी', en: 'English' };
 const SUB = { hi: 'Hindi', en: 'English', ta: 'Tamil', kn: 'Kannada' };
 export const OB = {
   en: { pick: 'Choose your language', pickB: 'You can change it any time.', next: 'Next', skip: 'Skip', go: 'Continue',
-    s: [['Just speak.', "Say an entry the way you'd tell a friend. The khata writes itself — no typing."], ['Your language, your way.', 'Hindi, Tamil, Kannada or English — even mixed in one sentence.'],
+    s: [['Just speak.', "Say an entry the way you'd tell a friend. The khata writes itself — no typing."], ['Your language, your way.', 'Hindi or English — even mixed in one sentence.'],
       ['Every rupee exact.', '“Teen sau chaalis”, “340”, “three-forty” — all become ₹340. Say “nahi, 430” to fix it.'], ['Yours alone.', "Your khata stays encrypted on this phone. Nothing is recorded. I'm an AI, and I'll always say so."]],
     mic: ['Allow the microphone', 'Voice Khata listens only after you tap the mic.', 'Allow microphone', 'Maybe later'], coach: 'Tap the mic and say: “Suresh ka 200 udhaar”',
     pts: ['Encrypted on this phone', 'No recordings stored', 'Reminders only if they agree', 'Always says it is an AI'] },
   hi: { pick: 'अपनी भाषा चुनें', pickB: 'आप इसे कभी भी बदल सकते हैं।', next: 'आगे', skip: 'छोड़ें', go: 'जारी रखें',
-    s: [['बस बोलिए।', 'दोस्त को बताने जैसे एंट्री बोलिए। खाता अपने आप लिख जाएगा — टाइपिंग नहीं।'], ['आपकी भाषा, आपका तरीका।', 'हिन्दी, तमिल, कन्नड़ या English — एक ही वाक्य में मिलाकर भी।'],
+    s: [['बस बोलिए।', 'दोस्त को बताने जैसे एंट्री बोलिए। खाता अपने आप लिख जाएगा — टाइपिंग नहीं।'], ['आपकी भाषा, आपका तरीका।', 'हिन्दी या English — एक ही वाक्य में मिलाकर भी।'],
       ['हर रुपया सटीक।', '“तीन सौ चालीस”, “340”, “three-forty” — सब ₹340 बनते हैं। सुधारने के लिए बोलिए “नहीं, 430”।'], ['सिर्फ़ आपका।', 'आपका खाता इस फ़ोन में एन्क्रिप्टेड रहता है। कुछ रिकॉर्ड नहीं होता। मैं एक एआई हूँ और हमेशा बताऊँगा।']],
     mic: ['माइक की अनुमति दें', 'वॉइस खाता तभी सुनता है जब आप माइक दबाते हैं।', 'माइक चालू करें', 'बाद में'], coach: 'माइक दबाकर बोलिए: “सुरेश का 200 उधार”',
     pts: ['इस फ़ोन में एन्क्रिप्टेड', 'कोई रिकॉर्डिंग नहीं', 'रिमाइंडर सिर्फ़ सहमति पर', 'हमेशा बताता है कि एआई है'] },
