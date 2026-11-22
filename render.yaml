@@ -1,0 +1,12 @@
+# One-click deploy on Render (free tier). The API key is NOT stored here: add it in the Render dashboard.
+services:
+  - type: web
+    name: voice-khata
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: GNANI_API_KEY
+        sync: false
